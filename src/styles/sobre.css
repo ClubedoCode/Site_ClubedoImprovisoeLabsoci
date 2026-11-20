@@ -1,0 +1,231 @@
+/* ===== Hero ===== */
+.sobre-hero {
+  position: relative;
+  padding: 120px 7% 50px;
+  text-align: center;
+  color: var(--white);
+  background-color: var(--text-light);
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45)),
+    url('/images/tela.jpg');
+  background-size: cover;
+  background-position: center;
+}
+
+/* a navbar flutua sobre a imagem (no global ela é relative) */
+.sobre-hero .navbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+
+.sobre-hero h1 {
+  font-size: 42px;
+  margin-bottom: 16px;
+  letter-spacing: 1px;
+}
+
+.sobre-hero p {
+  font-family: Arial, sans-serif;
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.85);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* ===== Conteúdo ===== */
+.sobre-main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 60px 20px;
+}
+
+.sobre-section-title {
+  font-size: 28px;
+  color: var(--orange);
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+/* ===== Missão / Visão / Valores ===== */
+.pilares-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 30px;
+  margin-bottom: 60px;
+}
+
+.pilar-card {
+  background: white;
+  padding: 32px 24px;
+  border-radius: 24px;
+  text-align: center;
+  box-shadow: var(--shadow);
+  transition: var(--transition);
+}
+
+.pilar-card:hover {
+  transform: translateY(-5px);
+}
+
+.pilar-icone {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.pilar-card h3 {
+  font-size: 22px;
+  color: var(--orange);
+  margin-bottom: 12px;
+}
+
+.pilar-card p {
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-light);
+}
+
+/* ===== História ===== */
+.historia {
+  background: white;
+  border-radius: 28px;
+  padding: 40px;
+  margin-bottom: 60px;
+  box-shadow: var(--shadow);
+}
+
+.historia-content p {
+  font-family: Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.8;
+  color: var(--text);
+  margin-bottom: 20px;
+}
+
+.historia-content p:last-child {
+  margin-bottom: 0;
+}
+
+/* ===== Equipe ===== */
+.membros {
+  margin-bottom: 60px;
+}
+
+.membros-subtitle {
+  text-align: center;
+  font-family: Arial, sans-serif;
+  font-size: 16px;
+  color: var(--text-light);
+  margin-bottom: 40px;
+}
+
+.membros-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 30px;
+}
+
+.membro-card {
+  background: white;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: var(--transition);
+}
+
+.membro-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.15);
+}
+
+.membro-foto {
+  width: 100%;
+  height: 280px;
+  overflow: hidden;
+  background: var(--orange-light);
+}
+
+.membro-foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: var(--transition);
+}
+
+.membro-card:hover .membro-foto img {
+  transform: scale(1.05);
+}
+
+.membro-info {
+  padding: 20px;
+  text-align: center;
+}
+
+.membro-info h3 {
+  font-size: 20px;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+
+.membro-funcao {
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+  font-weight: bold;
+  color: var(--orange);
+  letter-spacing: 0.5px;
+}
+
+.sobre-empty {
+  background: white;
+  border-radius: 28px;
+  padding: 48px 24px;
+  text-align: center;
+  font-family: Arial, sans-serif;
+  color: #888;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+}
+
+/* ===== Responsivo ===== */
+@media (max-width: 900px) {
+  .pilares-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .sobre-hero h1 {
+    font-size: 32px;
+  }
+
+  .sobre-hero p {
+    font-size: 16px;
+  }
+
+  .sobre-section-title {
+    font-size: 24px;
+  }
+
+  .historia {
+    padding: 28px;
+  }
+
+  .membros-grid {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  }
+}
+
+@media (max-width: 480px) {
+  .sobre-hero h1 {
+    font-size: 26px;
+  }
+
+  .sobre-main {
+    padding: 40px 16px;
+  }
+
+  .membro-foto {
+    height: 240px;
+  }
+}

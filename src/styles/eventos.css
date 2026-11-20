@@ -1,0 +1,445 @@
+/* ===== Hero da agenda ===== */
+.agenda-hero {
+  position: relative;
+  padding: 120px 7% 50px;
+  text-align: center;
+  color: var(--white);
+  background-color: var(--text-light);
+  background-image: url('/images/tela.jpg');
+  background-size: cover;
+  background-position: center;
+}
+
+/* a navbar flutua sobre a imagem (no global ela é relative) */
+.agenda-hero .navbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+
+.agenda-hero h1 {
+  font-size: 48px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 12px;
+}
+
+.agenda-hero p {
+  font-family: Arial, sans-serif;
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.8);
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+/* ===== Conteúdo ===== */
+.events-page-main {
+  background: #f6f6f6;
+  padding: 60px 7%;
+}
+
+.view-toggle {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  margin-bottom: 36px;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 18px;
+}
+
+.toggle-btn {
+  background: transparent;
+  border: none;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+  font-size: 18px;
+  padding: 8px 24px;
+  cursor: pointer;
+  border-radius: 40px;
+  transition: 0.2s;
+  color: var(--text-light);
+}
+
+.toggle-btn.active {
+  background: var(--orange);
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.toggle-btn:hover:not(.active) {
+  background: #e9e9e9;
+  color: var(--orange);
+}
+
+/* ===== Busca ===== */
+.search-bar {
+  display: flex;
+  gap: 10px;
+  max-width: 560px;
+  margin: 0 auto 32px;
+}
+
+.search-input {
+  flex: 1;
+  padding: 12px 20px;
+  border-radius: 50px;
+  border: 1px solid #ddd;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  color: var(--text);
+  background: white;
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+
+.search-input:focus {
+  border-color: var(--orange-light);
+  box-shadow: 0 0 0 3px rgba(244, 89, 48, 0.1);
+}
+
+.search-input::placeholder {
+  color: #bbb;
+}
+
+.search-btn {
+  padding: 12px 28px;
+  border-radius: 50px;
+  border: none;
+  background: var(--orange);
+  color: white;
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background var(--transition), transform 0.1s;
+  white-space: nowrap;
+}
+
+.search-btn:hover {
+  background: var(--orange-hover);
+  transform: translateY(-1px);
+}
+
+.search-btn:active {
+  transform: translateY(0);
+}
+
+/* ===== Eventos anteriores (lista compacta) ===== */
+.events-list-past {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.event-card-past {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: #fff;
+  border: 1px solid #eee;
+  color: inherit;
+  transition: background 0.2s;
+}
+
+.event-card-past:hover {
+  background: #f5f5f5;
+}
+
+.past-date {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  flex-shrink: 0;
+  min-width: 70px;
+  font-size: 0.85em;
+  color: var(--text-light);
+}
+
+.past-day {
+  font-weight: 700;
+  font-size: 1.1em;
+}
+
+.past-title {
+  flex: 1;
+  margin: 0;
+  font-size: 0.95em;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.past-badge {
+  flex-shrink: 0;
+  font-size: 0.75em;
+}
+
+/* ===== Próximos eventos (cartões) ===== */
+.events-list-container {
+  margin-top: 20px;
+}
+
+.events-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.event-card-modern {
+  background: white;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-wrap: wrap;
+  border: 1px solid #efefef;
+  color: inherit;
+}
+
+.event-card-modern:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.09);
+}
+
+/* Caixa de data: uma classe base + um modificador por projeto */
+.event-date-box {
+  min-width: 88px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 12px;
+  text-align: center;
+  color: white;
+}
+
+.event-date-box.cdi {
+  background: #e06320; /* Clube do Improviso */
+}
+
+.event-date-box.lab {
+  background: #055173; /* LabSoci */
+}
+
+.event-date-box.neutro {
+  color: #444;
+  background: linear-gradient(
+    to right,
+    rgba(224, 99, 32, 0.4) 0%,
+    #e8d5c4 40%,
+    #e8d5c4 60%,
+    rgba(5, 81, 115, 0.4) 100%
+  );
+}
+
+.event-date-box .day-number {
+  font-size: 32px;
+  font-weight: bold;
+  font-family: Georgia, serif;
+  line-height: 1;
+}
+
+.event-date-box .month-year {
+  font-family: Arial, sans-serif;
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin: 4px 0 2px;
+}
+
+.event-date-box .hour {
+  font-size: 11px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 2px 8px;
+  border-radius: 30px;
+  margin-top: 6px;
+  font-family: monospace;
+}
+
+.event-date-box.neutro .hour {
+  background: #055173;
+  color: #fff;
+}
+
+.event-info {
+  flex: 1;
+  padding: 14px 20px;
+}
+
+.event-info h3 {
+  font-size: 18px;
+  color: var(--text);
+  margin-bottom: 6px;
+  letter-spacing: -0.2px;
+}
+
+.event-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 8px;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  color: var(--text-light);
+}
+
+.event-meta span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.event-tags {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  font-family: Arial, sans-serif;
+  font-size: 10px;
+  font-weight: bold;
+  padding: 3px 10px;
+  border-radius: 30px;
+  background: #f0f0f0;
+  color: #444;
+}
+
+.badge.oficina {
+  background: #ffe5e0;
+  color: var(--orange);
+}
+
+.badge.teatro {
+  background: #e1f3ea;
+  color: #c46e2e;
+}
+
+.badge.especial {
+  background: #ffeed6;
+  color: #c46e2e;
+}
+
+.event-description {
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #4a4a4a;
+  margin: 8px 0 12px;
+}
+
+.event-location-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--orange);
+  border-bottom: 1px dashed var(--orange);
+  cursor: default;
+}
+
+/* ===== Paginação ===== */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  margin-top: 40px;
+  flex-wrap: wrap;
+}
+
+.page-btn {
+  font-family: Arial, sans-serif;
+  font-size: 18px;
+  font-weight: 900;
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  border: none;
+  background: var(--white);
+  color: var(--orange);
+  cursor: pointer;
+  transition: background var(--transition), transform 0.1s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.page-btn:hover:not(.active):not(:disabled) {
+  background: #e9e9e9;
+}
+
+.page-btn.active {
+  background: var(--orange);
+  color: var(--white);
+  cursor: default;
+}
+
+.page-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.page-gap {
+  color: var(--text-light);
+  padding: 0 2px;
+}
+
+.empty-state {
+  background: white;
+  border-radius: 28px;
+  padding: 48px 24px;
+  text-align: center;
+  font-family: Arial, sans-serif;
+  color: #888;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+}
+
+/* ===== Responsivo ===== */
+@media (max-width: 680px) {
+  .event-card-modern {
+    flex-direction: column;
+  }
+
+  .event-date-box {
+    flex-direction: row;
+    justify-content: space-around;
+    padding: 16px;
+    gap: 15px;
+  }
+
+  .event-info {
+    padding: 20px;
+  }
+
+  .agenda-hero h1 {
+    font-size: 36px;
+  }
+
+  .navbar {
+    padding: 16px 5%;
+  }
+
+  .toggle-btn {
+    font-size: 15px;
+    padding: 6px 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .events-page-main {
+    padding: 40px 5%;
+  }
+
+  .event-info h3 {
+    font-size: 20px;
+  }
+}
