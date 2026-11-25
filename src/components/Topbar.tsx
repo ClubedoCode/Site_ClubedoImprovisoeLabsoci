@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 interface TopbarProps {
   instagram: string;
 }
@@ -23,6 +25,9 @@ export default function Topbar({ instagram }: TopbarProps) {
         >
           WhatsApp
         </a>
+        <Link to="/admin/login" className="topbar-affiliate">
+          Afiliado
+        </Link>
       </div>
     </header>
   );

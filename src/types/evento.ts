@@ -13,13 +13,6 @@ export interface Evento {
   entrada?: string | null; // "20" = R$ 20; vazio = gratuita
 }
 
-export interface Membro {
-  id: number | string;
-  nome: string;
-  foto_url?: string | null;
-  funcao?: string | null;
-}
-
 export interface Imagem {
   id: number | string;
   url: string;

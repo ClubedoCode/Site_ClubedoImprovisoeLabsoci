@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAdmin } from '../context/AdminContext';
 import { useTema } from '../context/TemaContext';
 
-type Pagina = 'inicio' | 'eventos' | 'sobre' | 'admin';
+type Pagina = 'inicio' | 'eventos' | 'sobre' | 'admin' | 'admin-membros';
 
 const LINKS: { id: Pagina; rotulo: string; to: string }[] = [
   { id: 'inicio', rotulo: 'Início', to: '/' },
@@ -45,7 +45,17 @@ export default function Navbar({ ativa }: { ativa?: Pagina }) {
         {admin && (
           <li>
             <Link to="/admin" className={ativa === 'admin' ? 'active' : undefined}>
-              Painel
+              Eventos (admin)
+            </Link>
+          </li>
+        )}
+        {admin && (
+          <li>
+            <Link
+              to="/admin/membros"
+              className={ativa === 'admin-membros' ? 'active' : undefined}
+            >
+              Membros (admin)
             </Link>
           </li>
         )}

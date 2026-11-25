@@ -10,6 +10,7 @@ import EventoDetalhePage from './pages/EventoDetalhePage';
 import EventoEdicaoPage from './pages/EventoEdicaoPage';
 import LoginPage from './pages/LoginPage';
 import AdminPage from './pages/AdminPage';
+import AdminMembrosPage from './pages/AdminMembrosPage';
 import SobrePage from './pages/SobrePage';
 import './styles/global.css';
 
@@ -26,6 +27,7 @@ createRoot(document.getElementById('root')!).render(
               <Route path="evento/:id/editar" element={<EventoEdicaoPage />} />
               <Route path="sobre" element={<SobrePage />} />
               <Route path="admin" element={<AdminPage />} />
+              <Route path="admin/membros" element={<AdminMembrosPage />} />
               <Route path="admin/login" element={<LoginPage />} />
             </Route>
           </Routes>

@@ -1,8 +1,11 @@
 const path = require('path');
+const fs = require('fs/promises');
 require('dotenv').config({ path: path.join(__dirname, '.env'), quiet: true });
 
 const crypto = require('crypto');
 const express = require('express');
+const multer = require('multer');
+const sharp = require('sharp');
 const sqlite3 = require('sqlite3').verbose();
 
 const { ADMIN_USER, ADMIN_PASSWORD, SESSION_SECRET } = process.env;
@@ -14,11 +17,41 @@ if (!ADMIN_USER || !ADMIN_PASSWORD || !SESSION_SECRET) {
 
 const app = express();
 const port = Number(process.env.PORT) || 3000;
+const UPLOADS_DIR = path.resolve(__dirname, process.env.UPLOADS_DIR || 'uploads');
+const MEMBER_UPLOADS_DIR = path.join(UPLOADS_DIR, 'membros');
 const db = new sqlite3.Database(
     path.resolve(__dirname, process.env.DB_PATH || 'database.db')
 );
 
 app.use(express.json());
+
+const uploadFotoMembro = multer({
+    storage: multer.memoryStorage(),
+    limits: {
+        fileSize: 5 * 1024 * 1024,
+        files: 1,
+        fields: 5,
+        fieldNameSize: 100,
+        fieldSize: 2048,
+    },
+    fileFilter(req, file, callback) {
+        if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.mimetype)) {
+            callback(new Error('Envie uma imagem JPEG, PNG ou WebP.'));
+            return;
+        }
+        callback(null, true);
+    },
+});
+
+function receberFotoMembro(req, res, next) {
+    uploadFotoMembro.single('foto')(req, res, (err) => {
+        if (!err) return next();
+        const status = err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE'
+            ? 413
+            : 400;
+        res.status(status).json({ error: err.message });
+    });
+}
 
 // ---------- Sessão de admin ----------
 // O cookie guarda "usuario.expiracao.assinatura". A assinatura (HMAC com o
@@ -186,6 +219,83 @@ function buscarUm(sql, params = []) {
     });
 }
 
+function erroHttp(status, mensagem) {
+    const erro = new Error(mensagem);
+    erro.status = status;
+    return erro;
+}
+
+async function armazenarFotoMembro(arquivo) {
+    let buffer;
+    let metadata;
+    try {
+        const imagem = sharp(arquivo.buffer, { failOn: 'error', limitInputPixels: 25_000_000 });
+        metadata = await imagem.metadata();
+        if (!['jpeg', 'png', 'webp'].includes(metadata.format)) {
+            throw erroHttp(400, 'O conteúdo enviado não é uma imagem JPEG, PNG ou WebP válida.');
+        }
+        if (!metadata.width || !metadata.height ||
+            metadata.width * metadata.height > 25_000_000) {
+            throw erroHttp(413, 'A imagem excede o limite de resolução permitido.');
+        }
+        buffer = await sharp(arquivo.buffer, {
+            failOn: 'error',
+            limitInputPixels: 25_000_000,
+        })
+            .rotate()
+            .resize({ width: 800, height: 800, fit: 'inside', withoutEnlargement: true })
+            .webp({ quality: 82 })
+            .toBuffer();
+    } catch (erro) {
+        if (erro.status) throw erro;
+        throw erroHttp(400, 'Não foi possível processar a imagem enviada.');
+    }
+
+    await fs.mkdir(MEMBER_UPLOADS_DIR, { recursive: true });
+    const nomeArquivo = `${crypto.randomUUID()}.webp`;
+    const caminho = path.join(MEMBER_UPLOADS_DIR, nomeArquivo);
+    await fs.writeFile(caminho, buffer, { flag: 'wx' });
+    return { url: `/uploads/membros/${nomeArquivo}` };
+}
+
+function caminhoDeFotoMembro(url) {
+    const prefixo = '/uploads/membros/';
+    if (typeof url !== 'string' || !url.startsWith(prefixo)) return null;
+    const nomeArquivo = url.slice(prefixo.length);
+    if (!/^[\da-f]{8}-(?:[\da-f]{4}-){3}[\da-f]{12}\.webp$/i.test(nomeArquivo)) {
+        return null;
+    }
+    return path.join(MEMBER_UPLOADS_DIR, nomeArquivo);
+}
+
+async function limparFotoMembroSeSemUso(url) {
+    const caminho = caminhoDeFotoMembro(url);
+    if (!caminho) return false;
+
+    const referencias = await buscarUm(
+        'SELECT COUNT(*) AS total FROM Membros WHERE foto_url = ?',
+        [url]
+    );
+    if (referencias.total > 0) return false;
+
+    try {
+        await fs.unlink(caminho);
+    } catch (erro) {
+        if (erro.code !== 'ENOENT') throw erro;
+    }
+    return true;
+}
+
+async function avisoSeFalharLimpeza(url) {
+    try {
+        await limparFotoMembroSeSemUso(url);
+        return null;
+    } catch (erro) {
+        console.error(`Não foi possível limpar a foto ${url}:`, erro);
+        return 'Não foi possível remover uma imagem obsoleta do armazenamento.';
+    }
+}
+
 const PROJETOS = ['cdi', 'lab', '-'];
 
 function textoOuNulo(valor) {
@@ -197,6 +307,36 @@ function textoOuNulo(valor) {
 function listaDeTextos(valor) {
     if (!Array.isArray(valor)) return [];
     return [...new Set(valor.map(textoOuNulo).filter(Boolean))];
+}
+
+function lerCorpoMembro(corpo = {}) {
+    if (!corpo || typeof corpo !== 'object' || Array.isArray(corpo)) {
+        return { erro: 'Dados do membro inválidos' };
+    }
+
+    const nome = textoOuNulo(corpo.nome);
+    const funcao = textoOuNulo(corpo.funcao) ?? '';
+    const fotoUrl = textoOuNulo(corpo.foto_url);
+
+    if (!nome) return { erro: 'O nome do membro é obrigatório' };
+    if (nome.length > 100) return { erro: 'O nome deve ter no máximo 100 caracteres' };
+    if (funcao.length > 100) return { erro: 'A função deve ter no máximo 100 caracteres' };
+    if (fotoUrl && fotoUrl.length > 255) {
+        return { erro: 'A URL da foto deve ter no máximo 255 caracteres' };
+    }
+    if (fotoUrl && /^[a-z][a-z\d+.-]*:/i.test(fotoUrl) &&
+        !/^https?:\/\//i.test(fotoUrl)) {
+        return { erro: 'Use uma URL HTTP(S) ou um caminho de imagem local válido' };
+    }
+
+    return {
+        campos: [
+            nome,
+            fotoUrl,
+            funcao,
+            [false, 0, 'false', '0'].includes(corpo.ativo) ? 0 : 1,
+        ],
+    };
 }
 
 /**
@@ -239,6 +379,132 @@ function lerCorpoEvento(corpo = {}) {
 
 const COLUNAS_EVENTO =
     'nome, data, hora, local, descr, descr_g, capa_url, proj, categoria, concluido, entrada';
+const COLUNAS_MEMBRO_ADMIN = 'm.id, m.nome, m.foto_url, m.funcao, m.ativo';
+
+app.post('/api/membros', exigirAdmin, receberFotoMembro, async (req, res) => {
+    const membro = lerCorpoMembro(req.body);
+    if (membro.erro) return res.status(400).json({ error: membro.erro });
+
+    let fotoNova;
+    try {
+        if (req.file) {
+            fotoNova = await armazenarFotoMembro(req.file);
+            membro.campos[1] = fotoNova.url;
+        }
+        const resultado = await executar(
+            'INSERT INTO Membros (nome, foto_url, funcao, ativo) VALUES (?, ?, ?, ?)',
+            membro.campos
+        );
+        const criado = await buscarUm(
+            `SELECT ${COLUNAS_MEMBRO_ADMIN} FROM Membros m WHERE m.id = ?`,
+            [resultado.lastID]
+        );
+        res.status(201).json({ message: 'sucesso', data: criado });
+    } catch (err) {
+        const aviso = fotoNova ? await avisoSeFalharLimpeza(fotoNova.url) : null;
+        res.status(err.status || 500).json({
+            error: err.message,
+            ...(aviso ? { aviso } : {}),
+        });
+    }
+});
+
+app.put('/api/membro/:id', exigirAdmin, receberFotoMembro, async (req, res) => {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id)) return res.status(400).json({ error: 'ID inválido' });
+
+    const membro = lerCorpoMembro(req.body);
+    if (membro.erro) return res.status(400).json({ error: membro.erro });
+
+    let fotoNova;
+    try {
+        const anterior = await buscarUm(
+            'SELECT foto_url FROM Membros WHERE id = ?',
+            [id]
+        );
+        if (!anterior) return res.status(404).json({ message: 'Membro não encontrado' });
+
+        if (req.file) {
+            fotoNova = await armazenarFotoMembro(req.file);
+            membro.campos[1] = fotoNova.url;
+        } else if (['true', '1'].includes(String(req.body.remover_foto))) {
+            membro.campos[1] = null;
+        } else if (req.body.foto_url === undefined) {
+            membro.campos[1] = anterior.foto_url;
+        }
+
+        const resultado = await executar(
+            'UPDATE Membros SET nome = ?, foto_url = ?, funcao = ?, ativo = ? WHERE id = ?',
+            [...membro.campos, id]
+        );
+        if (resultado.changes === 0) {
+            return res.status(404).json({ message: 'Membro não encontrado' });
+        }
+        const atualizado = await buscarUm(
+            `SELECT ${COLUNAS_MEMBRO_ADMIN} FROM Membros m WHERE m.id = ?`,
+            [id]
+        );
+        const fotoAlterada = anterior.foto_url !== atualizado.foto_url;
+        const aviso = fotoAlterada
+            ? await avisoSeFalharLimpeza(anterior.foto_url)
+            : null;
+        res.json({
+            message: 'sucesso',
+            data: atualizado,
+            ...(aviso ? { aviso } : {}),
+        });
+    } catch (err) {
+        const aviso = fotoNova ? await avisoSeFalharLimpeza(fotoNova.url) : null;
+        res.status(err.status || 500).json({
+            error: err.message,
+            ...(aviso ? { aviso } : {}),
+        });
+    }
+});
+
+app.delete('/api/membro/:id', exigirAdmin, async (req, res) => {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id)) return res.status(400).json({ error: 'ID inválido' });
+    const confirmarVinculos = req.query.forcar === '1';
+
+    try {
+        const removido = await emTransacao(async () => {
+            const existe = await buscarUm(
+                'SELECT id, foto_url FROM Membros WHERE id = ?',
+                [id]
+            );
+            if (!existe) {
+                throw erroHttp(404, 'Membro não encontrado');
+            }
+
+            const vinculos = await buscarUm(
+                'SELECT COUNT(*) AS total FROM evento_membro WHERE membro_id = ?',
+                [id]
+            );
+            if (vinculos.total > 0 && !confirmarVinculos) {
+                const erro = erroHttp(
+                    409,
+                    'Este membro está associado a eventos. Confirme a remoção para desvinculá-lo.'
+                );
+                erro.vinculos = vinculos.total;
+                throw erro;
+            }
+
+            if (vinculos.total > 0) {
+                await executar('DELETE FROM evento_membro WHERE membro_id = ?', [id]);
+            }
+            await executar('DELETE FROM Membros WHERE id = ?', [id]);
+            return existe;
+        });
+        const aviso = await avisoSeFalharLimpeza(removido.foto_url);
+        res.json({ message: 'sucesso', ...(aviso ? { aviso } : {}) });
+    } catch (err) {
+        res.status(err.status || 500).json({
+            error: err.message,
+            ...(err.vinculos ? { vinculos: err.vinculos } : {}),
+        });
+    }
+});
 
 /** Substitui membros, tags e fotos do evento pelos enviados. */
 async function salvarRelacoes(id, { membros, tags, imagens }) {
@@ -357,6 +623,15 @@ app.delete('/api/evento/:id', exigirAdmin, async (req, res) => {
 app.use('/api', (req, res) => {
     res.status(404).json({ message: 'Rota não encontrada' });
 });
+
+app.use('/uploads/membros', express.static(MEMBER_UPLOADS_DIR, {
+    dotfiles: 'deny',
+    index: false,
+    maxAge: '7d',
+    setHeaders(res) {
+        res.setHeader('X-Content-Type-Options', 'nosniff');
+    },
+}));
 
 // ---------- Front-end (build do Vite) ----------
 

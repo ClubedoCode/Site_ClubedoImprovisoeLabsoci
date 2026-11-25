@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Paginacao from '../components/eventos/Paginacao';
 import TabelaEventos from '../components/admin/TabelaEventos';
@@ -101,6 +101,9 @@ function Painel({ verificando }: { verificando: boolean }) {
         >
           + Novo Evento
         </button>
+        <Link to="/admin/membros" className="btn btn-outline admin-members-link">
+          Gerenciar Membros
+        </Link>
       </header>
 
       <main className="admin-main">

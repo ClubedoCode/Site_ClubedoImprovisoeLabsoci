@@ -24,6 +24,21 @@
   cursor: pointer;
 }
 
+.admin-members-link {
+  margin: 26px 0 0 10px;
+  border-radius: 50px;
+  cursor: pointer;
+  display: inline-block;
+  padding: 12px 22px;
+  background: white;
+  color: var(--text);
+}
+
+.admin-members-link:hover {
+  border-color: var(--orange-light);
+  color: var(--orange);
+}
+
 .admin-new-btn:disabled {
   opacity: 0.6;
   cursor: wait;
@@ -179,6 +194,10 @@
   font-size: 14px;
 }
 
+.member-admin-table {
+  min-width: 640px;
+}
+
 .admin-table th {
   text-align: left;
   padding: 16px 18px;
@@ -303,6 +322,57 @@
 .btn-delete:hover {
   border-color: #d93025;
   background: #fdecea;
+}
+
+.member-table-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  vertical-align: middle;
+}
+
+.member-table-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.member-photo-preview-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.member-photo-preview {
+  width: 112px;
+  height: 112px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #f2f2f2;
+}
+
+.member-photo-field input[type='file'] {
+  padding: 8px;
+}
+
+.admin-form .edit-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.admin-form .edit-check input {
+  accent-color: var(--orange);
+  width: 18px;
+  height: 18px;
 }
 
 /* ===== Janelas (modal) ===== */
